@@ -160,3 +160,52 @@ y_pred_nb = nb_model.predict(X_test)
 
 print(classification_report(y_test, y_pred_nb))
 print("Accuracy:", accuracy_score(y_test, y_pred_nb))
+
+# Ensemble method
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier
+from sklearn.svm import SVC
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, classification_report
+import matplotlib.pyplot as plt
+
+# Scale the features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+
+# Define individual models
+gb_model = GradientBoostingClassifier(n_estimators=100, random_state=42)
+svm_model = SVC(probability=True, kernel='rbf', random_state=42)
+
+# Define Voting Classifier with soft voting
+ensemble_model = VotingClassifier(
+    estimators=[
+        ('random_forest', rf_model),
+        ('gradient_boosting', gb_model),
+        ('svm', svm_model)
+    ],
+    voting='soft'
+)
+
+# Train individual models and ensemble model
+rf_model.fit(X_train, y_train)
+gb_model.fit(X_train, y_train)
+svm_model.fit(X_train, y_train)
+ensemble_model.fit(X_train, y_train)
+
+# Predict and evaluate each model
+models = {'Random Forest': rf_model, 
+          'Gradient Boosting': gb_model, 
+          'SVM': svm_model, 
+          'Ensemble': ensemble_model}
+accuracies = {}
+
+for name, model in models.items():
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    accuracies[name] = accuracy
+    print(f"\n{name} Model")
+    print("Accuracy:", accuracy)
+    print(classification_report(y_test, y_pred))
+
